@@ -10,7 +10,11 @@ import (
 
 
 func dout(format string, a ...interface{}){
-	fmt.Printf(format+"\n", a...)
+	var debuging=1
+	if debuging>0{
+		fmt.Printf(format+"\n", a...)		
+	}
+
 }
 
 func min(a, b int) int{
@@ -58,14 +62,17 @@ func (l *tLog) back() tEntry{
 	return l.entries[len(l.entries)-1]
 }
 func (l *tLog) get(index int) tEntry{
-	if index<=l.lastPersist{
+	if index<l.lastPersist{
 		dout("get index(%d)<=lastPersist(%d)", index, l.lastPersist)
 		os.Exit(1)
 	}
 	return l.entries[index-l.lastPersist]
 }
+func (l *tLog) put(e tEntry){
+	l.entries=append(l.entries, e)
+}
 func (l *tLog) copyRange(begin, end int) []tEntry{
-	if begin<=l.lastPersist || end<=l.lastPersist{
+	if begin<l.lastPersist || end<l.lastPersist{
 		dout("copy range(%d, %d), lastPersist %d", begin, end, l.lastPersist)
 		os.Exit(1)
 	}

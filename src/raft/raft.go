@@ -69,7 +69,7 @@ type Raft struct {
 }
 // read only, no need to lock
 func (rf *Raft) String() string{
-	return fmt.Sprintf("(%d:%s:%d)", rf.me, rf.state, rf.term)
+	return fmt.Sprintf("(%d:%s:%d) nexts: %v, matches: %v, lastCommit: %d", rf.me, rf.state, rf.term, rf.nextIndex, rf.matchIndex, rf.lastCommit)
 }
 // Kill this raft
 func (rf *Raft) Kill(){
@@ -82,12 +82,30 @@ func (rf *Raft) killed() bool {
 }
 // GetState return this raft's term and whether it is leader
 func (rf *Raft) GetState() (int, bool){
-	return -1, false
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	var term=rf.term
+	var isleader=rf.state==_Leader
+	return term, isleader
 }
 // Start try to send applyMsg to this raft 
 func (rf *Raft) Start(command interface{}) (int, int, bool){
-	var term, isLeader=rf.GetState()
-	return -1, term, isLeader
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
+	defer rf.save()
+	var term=rf.term
+	var isleader=rf.state==_Leader
+	var index=rf.log.size()
+	if isleader{
+		rf.log.put(tEntry{
+			Command:	command,
+			Term:		rf.term,
+		})
+		rf.matchIndex[rf.me]=rf.log.size()-1
+		rf.nextIndex[rf.me]=rf.log.size()
+		dout("--------user append one(%v)---------", rf.log.back().Command)
+	}
+	return index, term, isleader
 }
 // Make a raft and return immediately
 func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan ApplyMsg) *Raft {
@@ -95,8 +113,6 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan 
 		peers:			peers,
 		persister:		persister,
 		me:				me,
-		electTimer:		time.NewTimer(randDuration(_ElectLower, _ElectUpper)),
-		heartbeatTimer:	time.NewTimer(_HeartBeatInterval),
 		state:			_Follower,
 		term:			0,
 		voteFor:		-1,
@@ -115,7 +131,8 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan 
 		rf.nextIndex[i]=rf.log.size() 
 		rf.matchIndex[i]=0
 	}
-
+	rf.electTimer=time.NewTimer(randDuration(_ElectLower, _ElectUpper))
+	rf.heartbeatTimer=time.NewTimer(_Infinite)	
 	dout("%s start", rf.String())
 	go func(){
 		for{
@@ -127,24 +144,28 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan 
 					os.Exit(1)
 				}
 				rf.convertTo(_Candidate)
+				rf.save()
 				rf.mu.Unlock()
 			case <-rf.heartbeatTimer.C:
 				rf.mu.Lock()
 				if rf.state!=_Leader{ 
-					dout("%s try to broadcast heartbeat", rf.String())
-					os.Exit(1)
-				}
+					dout("%s try to heartbead", rf.String())
+					os.Exit(1)					
+				 }
 				rf.convertTo(_Leader)			
 				rf.mu.Unlock()			
 			}			
 		}
-
 	}()
 	return &rf
 }
 
 // should be called with lock
 func (rf *Raft) convertTo(s tState){
+	if s==_Candidate || rf.state!=s{
+		dout("%s convert %s -> %s", rf.String(), rf.state, s)
+		rf.state=s		
+	}	
 	switch s{
 	case _Follower:
 		rf.electTimer.Reset(randDuration(_ElectLower, _ElectUpper))
@@ -152,20 +173,18 @@ func (rf *Raft) convertTo(s tState){
 	case _Candidate:
 		rf.term++
 		rf.voteFor=rf.me
-		rf.save()
 		rf.sendRequestVotes()
 		rf.electTimer.Reset(randDuration(_ElectLower, _ElectUpper))
 		rf.heartbeatTimer.Reset(_Infinite)
 	default:
-		for i:=range rf.nextIndex { rf.nextIndex[i]=rf.log.size() }
+		if rf.state!=_Leader{
+			for i:=range rf.nextIndex { rf.nextIndex[i]=rf.log.size() }			
+		}
 		rf.sendAppendEntries()
 		rf.electTimer.Reset(_Infinite)
 		rf.heartbeatTimer.Reset(_HeartBeatInterval)
 	}
-	if s==_Candidate || rf.state!=s{
-		dout("%s convert %s -> %s", rf.String(), rf.state, s)
-		rf.state=s
-	}
+
 }
 // should be called with lock
 func (rf *Raft) save(){
@@ -174,24 +193,6 @@ func (rf *Raft) save(){
 // should be called with lock
 func (rf *Raft) load(){
 
-}
-//should be called with lock
-func (rf *Raft) applyEntries(){
-	var tmp=rf.lastApply
-	if rf.lastApply>rf.lastCommit{
-		dout("%s lastApply(%d)>lastCommit(%d)", rf.String(), rf.lastApply, rf.lastCommit)
-		os.Exit(1)
-	}
-	if rf.lastApply==rf.lastCommit { return }
-	for rf.lastApply<rf.lastCommit {
-		rf.lastApply++	
-		rf.applyCh<-ApplyMsg {
-			CommandValid:	true,
-			Command:		rf.log.get(rf.lastApply).Command,
-			CommandIndex:	rf.lastApply,
-		}	
-	}
-	dout("%s apply entries [%d, %d)", rf.String(), tmp+1, rf.lastCommit+1)
 }
 // should be called with lock
 func (rf *Raft) sendRequestVotes(){
@@ -205,11 +206,13 @@ func (rf *Raft) sendRequestVotes(){
 			LastLogIndex:	rf.log.size()-1,
 		}
 		var reply RequestVoteReply
-		go func(i int, args *RequestVoteArgs, reply *RequestVoteReply){
-			for !rf.peers[i].Call("Raft.RequestVote", args, reply){
+		dout("%s -{request vote}-> %d", rf.String(), i)	
+		go func(i int, args *RequestVoteArgs, reply *RequestVoteReply){			
+			var ok=rf.peers[i].Call("Raft.RequestVote", args, reply)
+			if !ok{
 				dout("%s -{request vote}-> %d fail", rf.String(), i)
+				return
 			}
-			dout("%s -{request vote}-> %d", rf.String(), i)
 			rf.mu.Lock()
 			defer rf.mu.Unlock()
 			if reply.Term>rf.term{
@@ -240,11 +243,13 @@ func (rf *Raft) sendAppendEntries(){
 			LeaderCommit:	rf.lastCommit,
 		}
 		var reply AppendEntriesReply
-		go func(i int, args *AppendEntriesArgs, reply *AppendEntriesReply){
-			for !rf.peers[i].Call("Raft.AppendEntries", args, reply){
+		dout("%s -{entries [%d, %d)}-> %d", rf.String(), rf.nextIndex[i], rf.log.size(), i)	
+		go func(i int, args *AppendEntriesArgs, reply *AppendEntriesReply){			
+			var ok=rf.peers[i].Call("Raft.AppendEntries", args, reply)
+			if !ok{
 				dout("%s -{entries [%d, %d)}-> %d fail", rf.String(), rf.nextIndex[i], rf.log.size(), i)
+				return
 			}
-			dout("%s -{entries [%d, %d)}-> %d", rf.String(), rf.nextIndex[i], rf.log.size(), i)
 			rf.mu.Lock()
 			defer rf.mu.Unlock()
 			if reply.Term>rf.term{
@@ -259,7 +264,7 @@ func (rf *Raft) sendAppendEntries(){
 					var min, mid=minAndMediate(rf.matchIndex)
 					rf.lastCommit=max(rf.lastCommit, mid)
 					if rf.lastApply<rf.lastCommit{
-						rf.applyEntries()
+						go rf.applyEntries()
 						rf.log.compressUntil(min+1)
 						rf.save()					
 					}						
@@ -309,15 +314,16 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		rf.convertTo(_Follower)			
 		if args.PrevLogIndex<=rf.log.size()-1 && args.PrevLogTerm==rf.log.get(args.PrevLogIndex).Term{
 			if args.PrevLogIndex+len(args.Entries)<=rf.lastCommit{
-				dout("%s desperate entries [%d, %d)", rf.String(), args.PrevLogIndex+1, args.PrevLogIndex+len(args.Entries))
+				dout("%s desperate entries [%d, %d)", rf.String(), args.PrevLogIndex+1, args.PrevLogIndex+len(args.Entries)+1)
 			}else{
-				var begin=max(0, rf.lastCommit-args.PrevLogIndex)
-				rf.log.replaceFrom(rf.lastCommit+1, args.Entries[begin:])
-				dout("%s append entries [%d, %d)", rf.String(), begin, rf.log.size())
+				var replaceBegin=max(rf.lastCommit+1, args.PrevLogIndex+1)
+				var appendBegin=max(0, rf.lastCommit-args.PrevLogIndex)
+				rf.log.replaceFrom(replaceBegin, args.Entries[appendBegin:])
+				dout("%s append entries [%d, %d)", rf.String(), replaceBegin, args.PrevLogIndex+1+len(args.Entries))
 				rf.matchIndex[args.LeaderID]=args.LeaderCommit
 				rf.lastCommit=max(rf.lastCommit, args.LeaderCommit)
 				rf.lastCommit=min(rf.lastCommit, rf.log.size())
-				rf.applyEntries()
+				go rf.applyEntries()
 				var m, _=minAndMediate(rf.matchIndex)
 				rf.log.compressUntil(m+1)
 			}
@@ -328,6 +334,11 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			}
 		}else if args.PrevLogIndex<=rf.log.size()-1{
 			// try to get correct expect next index
+			*reply=AppendEntriesReply{
+				Term:		rf.term,
+				Success:	true,
+				ExpectNext:	args.PrevLogIndex-1,
+			}			
 		}else{ // args.PrevLogIndex>rf.log.size()-1
 			*reply=AppendEntriesReply{
 				Term:		rf.term,
@@ -342,6 +353,30 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			Success:	false,
 			ExpectNext: -1,
 		}
-		dout("%s refuse %s", rf.String(), args.LeaderID)
+		dout("%s refuse %d", rf.String(), args.LeaderID)
+	}
+}
+
+// should be called with a go runtine, since command application may time cost
+// no need to lock, since rf.lastCommit only increase
+func (rf *Raft) applyEntries(){
+	var tmp=rf.lastApply
+	for {
+		rf.mu.Lock()
+		if rf.lastApply>rf.lastCommit{
+			dout("%s lastApply(%d)>lastCommit(%d)", rf.String(), rf.lastApply, rf.lastCommit)
+			os.Exit(1)
+		}		
+		if rf.lastApply==rf.lastCommit { break }
+		rf.lastApply++	
+		rf.applyCh<-ApplyMsg {
+			CommandValid:	true,
+			Command:		rf.log.get(rf.lastApply).Command,
+			CommandIndex:	rf.lastApply,
+		}
+		rf.mu.Unlock()	
+	}
+	if tmp<rf.lastCommit{
+		dout("%s apply entries [%d, %d)", rf.String(), tmp+1, rf.lastCommit+1)		
 	}
 }
