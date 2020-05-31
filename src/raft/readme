@@ -1,0 +1,74 @@
+首先，在lab2和lab3中，需要通过调用raft.Call()来进行rpc：
+
+
+func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
+	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
+	return ok
+}
+这个定义在labrpc中的rpc函数会模仿不稳定网络，因此这个rpc函数（同步的）会返回true或者false
+
+
+另外，一共需要提供以下接口：
+
+
+type ApplyMsg struct {
+	CommandValid bool
+	Command      interface{}
+	CommandIndex int
+}
+预定义的消息结构体，不可更改
+
+
+type Raft struct {
+	mu        sync.Mutex          // Lock to protect shared access to this peer's state
+	peers     []*labrpc.ClientEnd // RPC end points of all peers
+	persister *Persister          // Object to hold this peer's persisted state
+	me        int                 // this peer's index into peers[]
+	dead      int32               // set by Kill()
+
+	// Your data here (2A, 2B, 2C).
+	// Look at the paper's Figure 2 for a description of what
+	// state a Raft server must maintain.
+
+}
+预定义的Raft结构体（部分），不推荐更改
+
+
+func (rf *Raft) GetState() (int, bool) 
+返回当前raft的term, 以及是否是leader
+
+
+func (rf *Raft) Start(command interface{}) (int, int, bool) 
+用来向raft系统提交消息
+返回消息在日志中的的index（如果不成功，比如当前raft不是leader）,以及raft的state（参考上一个API）
+
+
+func (rf *Raft) Kill() {
+	atomic.StoreInt32(&rf.dead, 1)
+	// Your code here, if desired.
+}
+用来杀死当前raft，不推荐修改
+
+
+func (rf *Raft) killed() bool {
+	z := atomic.LoadInt32(&rf.dead)
+	return z == 1
+}
+用来检查raft是否已经死掉
+
+
+func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan ApplyMsg) *Raft {
+	rf := &Raft{}
+	rf.peers = peers
+	rf.persister = persister
+	rf.me = me
+
+	// Your initialization code here (2A, 2B, 2C).
+
+	// initialize from state persisted before a crash
+	rf.readPersist(persister.ReadRaftState())
+
+
+	return rf
+}
+创建一个raft并立即返回
