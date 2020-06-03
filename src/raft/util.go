@@ -1,18 +1,24 @@
+
 package raft
 
 import (
 	"fmt"
-	"os"
 	"math/rand"
 	"time"
 	"sort"
+	"sync"
 )
 
+var mtx sync.Mutex
+var _TimeStamp=0
 
 func dout(format string, a ...interface{}){
-	var debuging=1
-	if debuging>0{
-		fmt.Printf(format+"\n", a...)		
+	if _UseDebug>0{
+		mtx.Lock()
+		fmt.Printf("%d: ",_TimeStamp)
+		fmt.Printf(format+"\n", a...)
+		_TimeStamp++
+		mtx.Unlock()		
 	}
 
 }
@@ -31,11 +37,11 @@ func randDuration(lower, upper time.Duration) time.Duration {
 	return time.Duration(num) * time.Nanosecond
 }
 
-func minAndMediate(arr []int) (int, int){
+func mediate(arr []int) int{
 	var cp=make([]int, len(arr))
 	copy(cp, arr)
 	sort.Sort(sort.IntSlice(cp))
-	return cp[0], cp[len(cp)/2]
+	return cp[len(cp)/2]
 }
 
 
@@ -44,54 +50,39 @@ type tEntry struct{
 	Command		interface{}
 }
 
-type tLog struct{
-	lastPersist	int
-	entries		[]tEntry
-}
-func makeLog() *tLog{
-	var l=tLog{
-		lastPersist:	0,
-		entries:	[]tEntry{{0, nil}},
-	}
-	return &l
-}
-func (l *tLog) size() int{
-	return len(l.entries)+l.lastPersist
-}
-func (l *tLog) back() tEntry{
-	return l.entries[len(l.entries)-1]
-}
-func (l *tLog) get(index int) tEntry{
-	if index<l.lastPersist{
-		dout("get index(%d)<=lastPersist(%d)", index, l.lastPersist)
-		os.Exit(1)
-	}
-	return l.entries[index-l.lastPersist]
-}
-func (l *tLog) put(e tEntry){
-	l.entries=append(l.entries, e)
-}
-func (l *tLog) copyRange(begin, end int) []tEntry{
-	if begin<l.lastPersist || end<l.lastPersist{
-		dout("copy range(%d, %d), lastPersist %d", begin, end, l.lastPersist)
-		os.Exit(1)
-	}
+type tEntrySlice []tEntry
+func (ls tEntrySlice) copy(begin, end int) tEntrySlice{
+	if end<=begin{ return tEntrySlice{} }
 	var res=make([]tEntry, end-begin)
-	copy(res, l.entries[begin-l.lastPersist: end-l.lastPersist])
-	return res
+	copy(res, ls[begin: end])
+	return tEntrySlice(res)
 }
-func (l *tLog) replaceFrom(begin int, arr []tEntry){
-	if begin<=l.lastPersist{
-		dout("replace from index(%d)<=lastPersist(%d)", begin, l.lastPersist)
-		os.Exit(1)
-	}
-	l.entries=l.entries[0:begin-l.lastPersist]
-	l.entries=append(l.entries, arr...)
+
+type tLog struct{
+	offset	int
+	slice	[]tEntry
 }
-func (l *tLog) compressUntil(end int){
-	if end<=l.lastPersist+1{ return }
-	var arr=[]tEntry{}
-	arr=append(arr, l.entries[end-l.lastPersist-1: l.size()-l.lastPersist]...)
-	l.lastPersist=end-1	
-	l.entries=arr
+func (log *tLog) size() int{
+	return log.offset+len(log.slice)
+}
+func (log *tLog) base() int{
+	return log.offset
+}
+func (log *tLog) get(index int) tEntry{
+	return log.slice[index-log.offset]
+}
+func (log *tLog) last() tEntry{
+	var index=len(log.slice)-1
+	return log.slice[index-log.offset]
+}
+func (log *tLog) append(cmd ...tEntry){
+	log.slice=append(log.slice, cmd...)
+}
+func (log *tLog) keep(begin, end int){
+	log.slice=log.slice[begin-log.offset: end-log.offset]
+}
+func (log *tLog) copy(begin, end int) tEntrySlice{
+	var res=make([]tEntry, end-begin)
+	copy(res, log.slice[begin-log.offset: end-log.offset])
+	return tEntrySlice(res)
 }

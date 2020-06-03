@@ -20,7 +20,7 @@ type AppendEntriesArgs struct{
 	LeaderID		int				
 	PrevLogIndex	int			
 	PrevLogTerm		int			
-	Entries			[]tEntry	
+	Entries			tEntrySlice
 	LeaderCommit	int			
 }
 // AppendEntriesReply rpc
