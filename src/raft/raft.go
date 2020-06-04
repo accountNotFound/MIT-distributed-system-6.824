@@ -76,7 +76,7 @@ type Raft struct {
 // read only, no need to lock
 func (rf *Raft) String() string{
 	// return fmt.Sprintf("(%d:%s:%d) nexts: %v, matches: %v, lastCommit: %d", rf.me, rf.state, rf.term, rf.nextIndex, rf.matchIndex, rf.lastCommit)
-	return fmt.Sprintf("(%d,%s,%d)", rf.me, rf.state, rf.term)
+	return fmt.Sprintf("(%d,%s,%d,%d,%d) %v", rf.me, rf.state, rf.term, rf.lastApply, rf.lastCommit, rf.log.slice)
 }
 // Kill this raft
 func (rf *Raft) Kill(){
@@ -226,11 +226,12 @@ func (rf *Raft) convertTo(s tState){
 		rf.electTimer.Reset(randDuration(_ElectLower, _ElectUpper))
 		rf.heartbeatTimer.Reset(_Infinite)
 	default:
-		if rf.state!=_Leader{
-			for i:=range rf.nextIndex { 
-				rf.nextIndex[i]=rf.log.size() 
-			}			
-		}
+		// if rf.state!=_Leader{
+		// 	for i:=range rf.nextIndex { 
+		// 		rf.nextIndex[i]=rf.log.size() 
+		// 	}			
+		// }
+		for i:=range rf.nextIndex{ rf.nextIndex[i]=min(rf.nextIndex[i], rf.log.size()) }
 		rf.broadcast()
 		rf.electTimer.Reset(_Infinite)
 		rf.heartbeatTimer.Reset(_HeartBeatInterval)
