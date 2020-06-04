@@ -26,6 +26,6 @@ type AppendEntriesArgs struct{
 // AppendEntriesReply rpc
 type AppendEntriesReply struct{
 	Term		int
-	ExpectNext	int
+	ExpectNext	int	// for log backup efficency
 	Success		bool	
 }
