@@ -245,10 +245,6 @@ func (rf *Raft) apply(){
 	go func(first, last int){
 		for{
 			rf.sync()
-			if rf.lastApply>rf.lastCommit{
-				dout("%s, %d, %d", rf.String(), rf.lastApply, rf.lastCommit)
-				os.Exit(1)
-			}
 			if rf.lastApply==rf.lastCommit{
 				rf.unsync()
 				break
