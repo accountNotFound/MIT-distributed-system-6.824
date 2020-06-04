@@ -65,9 +65,6 @@ type tLog struct{
 func (log *tLog) size() int{
 	return log.offset+len(log.slice)
 }
-func (log *tLog) base() int{
-	return log.offset
-}
 func (log *tLog) get(index int) tEntry{
 	return log.slice[index-log.offset]
 }
