@@ -768,6 +768,9 @@ func TestUnreliableAgree2C(t *testing.T) {
 }
 
 func TestFigure8Unreliable2C(t *testing.T) {
+
+	//var idx=1
+
 	servers := 5
 	cfg := make_config(t, servers, true)
 	defer cfg.cleanup()
@@ -775,6 +778,8 @@ func TestFigure8Unreliable2C(t *testing.T) {
 	cfg.begin("Test (2C): Figure 8 (unreliable)")
 
 	cfg.one(rand.Int()%10000, 1, true)
+	// cfg.one(idx, 1, true)	//debug
+	// idx++		//debug
 
 	nup := servers
 	for iters := 0; iters < 1000; iters++ {
@@ -784,6 +789,9 @@ func TestFigure8Unreliable2C(t *testing.T) {
 		leader := -1
 		for i := 0; i < servers; i++ {
 			_, _, ok := cfg.rafts[i].Start(rand.Int() % 10000)
+			// _, _, ok := cfg.rafts[i].Start(idx)		// debug	
+			// idx++	//debug
+
 			if ok && cfg.connected[i] {
 				leader = i
 			}
@@ -818,6 +826,8 @@ func TestFigure8Unreliable2C(t *testing.T) {
 	}
 
 	cfg.one(rand.Int()%10000, servers, true)
+	// cfg.one(idx, servers, true)	//debug
+	// idx++	//debug
 
 	cfg.end()
 }

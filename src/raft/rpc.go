@@ -22,6 +22,7 @@ type AppendEntriesArgs struct{
 	PrevLogTerm		int			
 	Entries			tEntrySlice
 	LeaderCommit	int			
+	LeaderPersist	int		// for follower log compress
 }
 // AppendEntriesReply rpc
 type AppendEntriesReply struct{

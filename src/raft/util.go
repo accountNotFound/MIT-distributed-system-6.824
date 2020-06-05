@@ -43,6 +43,11 @@ func mediate(arr []int) int{
 	sort.Sort(sort.IntSlice(cp))
 	return cp[len(cp)/2]
 }
+func minimum(arr []int) int{
+	var res=arr[0]
+	for i:=range arr{ res=min(res, arr[i]) }
+	return res
+}
 
 
 type tEntry struct{
@@ -69,17 +74,20 @@ func (log *tLog) get(index int) tEntry{
 	return log.slice[index-log.offset]
 }
 func (log *tLog) last() tEntry{
-	var index=len(log.slice)-1
-	return log.slice[index-log.offset]
+	return log.slice[len(log.slice)-1]
 }
 func (log *tLog) append(cmd ...tEntry){
 	log.slice=append(log.slice, cmd...)
 }
 func (log *tLog) keep(begin, end int){
+	begin=max(begin, log.offset)
+	end=min(end, log.size())
 	log.slice=log.slice[begin-log.offset: end-log.offset]
 }
 func (log *tLog) copy(begin, end int) tEntrySlice{
 	var res=make([]tEntry, end-begin)
+	begin=max(begin, log.offset)
+	end=min(end, log.size())	
 	copy(res, log.slice[begin-log.offset: end-log.offset])
 	return tEntrySlice(res)
 }
