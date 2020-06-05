@@ -227,7 +227,7 @@ func (rf *Raft) convertTo(s tState){
 		if rf.state!=_Leader{
 			for i:=range rf.nextIndex{
 				rf.nextIndex[i]=rf.log.size() 
-				rf.matchIndex[i]=rf.lastCommit
+				// rf.matchIndex[i]=rf.lastCommit
 			}			
 		}
 		rf.broadcast()
