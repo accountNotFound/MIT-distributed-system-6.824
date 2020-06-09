@@ -1,6 +1,6 @@
 package raft
 
-
+import "fmt"
 
 // RequestVoteArgs rpc
 type RequestVoteArgs struct{
@@ -11,8 +11,8 @@ type RequestVoteArgs struct{
 }
 // RequestVoteReply rpc
 type RequestVoteReply struct{
-	Term	int
-	Success	bool
+	Term			int
+	VoteGaruantee	bool
 }
 // AppendEntriesArgs rpc
 type AppendEntriesArgs struct{
@@ -20,13 +20,18 @@ type AppendEntriesArgs struct{
 	LeaderID		int				
 	PrevLogIndex	int			
 	PrevLogTerm		int			
-	Entries			tEntrySlice
+	Entries			[]entryT
 	LeaderCommit	int			
-	LeaderPersist	int		// for follower log compress
+	LeaderSnapshot	int		// for follower log compress, in lab2 this will be ignore
 }
+func (args *AppendEntriesArgs) String() string{
+	return fmt.Sprintf("{%d, %d, %d, %d, %d}", 
+					args.Term, args.PrevLogIndex, len(args.Entries), args.LeaderCommit, args.LeaderSnapshot)
+}
+
 // AppendEntriesReply rpc
 type AppendEntriesReply struct{
 	Term		int
-	ExpectNext	int	// for log backup efficency
-	Success		bool	
+	Success		bool // to check if the follower append the log
+	ExpectNext	int	// for log backup efficency, if it is -1, means follower dones't accept leaders entries
 }

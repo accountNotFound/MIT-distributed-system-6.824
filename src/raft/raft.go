@@ -10,14 +10,13 @@ import (
 	"../labgob"
 )
 
-const _UseDebug=0 // 0 means no std output
-const _Delay=1
+const useDebug=0 // 0 means no std output, see util.dump()
+const delay=1
 
 const (
-	_HeartBeatInterval	=time.Duration(120)*time.Millisecond*_Delay
-	_ElectLower			=time.Duration(350)*time.Millisecond*_Delay
-	_ElectUpper			=time.Duration(500)*time.Millisecond*_Delay
-	_Infinite			=time.Duration(10)*time.Second*_Delay
+	heartbeatInterC		=time.Duration(120)*time.Millisecond*delay
+	electLowerC			=time.Duration(350)*time.Millisecond*delay
+	electUpperC			=time.Duration(500)*time.Millisecond*delay
 )
 
 // ApplyMsg is a pre-defined struct by framework, don't change it
@@ -27,21 +26,24 @@ type ApplyMsg struct {
 	CommandIndex int
 }
 
-type tState uint8
+type stateT uint8
 const (
-	_Follower	tState=iota
-	_Candidate
-	_Leader
+	followerC	stateT=iota
+	candidateC
+	leaderC
 )
-func (s tState) String() string{
+func (s stateT) String() string{
 	switch s{
-	case _Follower:		return "follower"
-	case _Candidate:	return "candidate"
+	case followerC:		return "follower"
+	case candidateC:	return "candidate"
 	default:			return "leader"
 	}
 }
 
-
+type entryT struct{
+	Term		int
+	Command		interface{}
+}
 
 // Raft is a pre-defined struct by framework
 type Raft struct {
@@ -55,34 +57,38 @@ type Raft struct {
 	// Look at the paper's Figure 2 for a description of what
 	// state a Raft server must maintain.
 
+	//2A below
 	electTimer		*time.Timer
 	heartbeatTimer	*time.Timer
+	state			stateT
+	currentTerm		int
+	votedFor		int
+	log				[]entryT
 
-	state		tState
-	term		int
-	voteFor		int
-
+	//2B below
 	lastCommit	int
 	lastApply	int
 	nextIndex	[]int
-	matchIndex	[]int
-
-	log			tLog
+	matchIndex	[]int		
 	applyCh		chan ApplyMsg	
 
+	//2C below
 	useSave		bool
+
+	//3B below, in lab2 this will be simply set as zero and no change
+	// absolute log size = len(log)+lastSnapshot
+	lastSnapshot	int
 }
-// read only, no need to lock
-func (rf *Raft) String() string{
-	// return fmt.Sprintf("(%d:%s:%d) nexts: %v, matches: %v, lastCommit: %d", rf.me, rf.state, rf.term, rf.nextIndex, rf.matchIndex, rf.lastCommit)
-	return fmt.Sprintf("(%d,%s,%d,%d,%d)[%d:%v]", rf.me, rf.state, rf.term, rf.lastApply, rf.lastCommit, rf.log.size()-1, rf.log.last())
-}
+
+
+// implementation of some pre-define API below
+
 // Kill this raft
 func (rf *Raft) Kill(){
 	rf.sync()
-	atomic.StoreInt32(&rf.dead, 1)
+	rf.dead=1
 	rf.useSave=true
-	dout("%s be killed", rf.String())
+	dump("%s be killed", rf.String())
 	rf.unsync()
 	// Your code here, if desired.
 }
@@ -94,26 +100,25 @@ func (rf *Raft) killed() bool {
 func (rf *Raft) GetState() (int, bool){
 	rf.sync()
 	defer rf.unsync()
-	var term=rf.term
-	var isleader=rf.state==_Leader
+	var term=rf.currentTerm
+	var isleader=rf.state==leaderC
 	return term, isleader
 }
 // Start try to send applyMsg to this raft 
 func (rf *Raft) Start(command interface{}) (int, int, bool){
 	rf.sync()
 	defer rf.unsync()
-	var term=rf.term
-	var isleader=rf.state==_Leader
-	var index=rf.log.size()
+	var term=rf.currentTerm
+	var isleader=rf.state==leaderC
+	var index=rf.logSize()
 	if isleader{
-		rf.log.append(tEntry{
+		rf.appendLog(entryT{
 			Command:	command,
-			Term:		rf.term,
+			Term:		rf.currentTerm,
 		})
-		rf.matchIndex[rf.me]=rf.log.size()-1
-		rf.nextIndex[rf.me]=rf.log.size()
-		rf.useSave=true
-		dout("--------user append one(%v)---------", rf.log.last().Command)
+		rf.matchIndex[rf.me]=rf.logSize()-1
+		rf.nextIndex[rf.me]=rf.logSize()
+		dump("--------user start one(%v) to %s---------", rf.logLast().Command, rf.String())
 	}
 	return index, term, isleader
 }
@@ -123,53 +128,45 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan 
 		peers:			peers,
 		persister:		persister,
 		me:				me,
-		state:			_Follower,
-		term:			0,
-		voteFor:		-1,
+		state:			followerC,
+		currentTerm:	0,
+		votedFor:		-1,
 		lastCommit:		0,
 		lastApply:		0,
 		nextIndex:		make([]int, len(peers)),
 		matchIndex:		make([]int, len(peers)),
-		log:			tLog{ 0, []tEntry{{0, nil}} },
+		log:			[]entryT{{0, nil}},
 		applyCh:		applyCh,
 		useSave:		false,
+		lastSnapshot:	0,
 	}
 	// Your initialization code here (2A, 2B, 2C).
 	// initialize from state persisted before a crash
 	rf.load()
 	for i:=range peers{ 
-		rf.nextIndex[i]=rf.log.size() 
+		rf.nextIndex[i]=rf.logSize() 
 		rf.matchIndex[i]=0
 	}
-	rf.electTimer=time.NewTimer(randDuration(_ElectLower, _ElectUpper))
-	rf.heartbeatTimer=time.NewTimer(_Infinite)	
-	dout("%s start", rf.String())
+	rf.electTimer=time.NewTimer(randDuration(electLowerC, electUpperC))
+	rf.heartbeatTimer=time.NewTimer(heartbeatInterC)	
+	dump("%s start", rf.String())
 	go func(){
 		for{
 			select{
 			case <-rf.electTimer.C:
-				rf.sync()
-				// if rf.state==_Leader{ 
-				// 	dout("%s try to elect", rf.String())
-				// 	os.Exit(1)
-				//  }
-				rf.convertTo(_Candidate)
-				rf.unsync()
+				rf.toCandidateAndstartElection()
 			case <-rf.heartbeatTimer.C:
-				rf.sync()
-				// if rf.state!=_Leader{ 
-				// 	dout("%s try to heartbeat", rf.String())
-				// 	os.Exit(1)
-				//  }			
-				 rf.convertTo(_Leader)
-				rf.unsync()			
+				rf.checkLeaderAndbroadcast()
 			}			
 		}
 	}()
 	return &rf
 }
 
+
 // self define functions below
+
+
 func (rf *Raft) sync(){
 	rf.mu.Lock()
 }
@@ -180,279 +177,298 @@ func (rf *Raft) unsync(){
 	}
 	rf.mu.Unlock()
 }
-// should be called with lock
+
+
+// all below functions should be called with lock
+
+// saver and loader for persistence
 func (rf *Raft) save(){
 	// save raft state
 	var w=new(bytes.Buffer)
 	var e=labgob.NewEncoder(w)
-	e.Encode(rf.term)
-	e.Encode(rf.voteFor)
-	e.Encode(rf.log.offset)
-	e.Encode(rf.log.slice)
-	// e.Encode(rf.lastApply)
+	e.Encode(rf.currentTerm)
+	e.Encode(rf.votedFor)
+	e.Encode(rf.log)
 	e.Encode(rf.lastCommit)
+	e.Encode(rf.lastSnapshot)
 	rf.persister.SaveRaftState(w.Bytes())
-	dout("%s save [%d:%d)", rf.String(), rf.lastCommit, rf.log.size())
 }
-// should be called with lock
 func (rf *Raft) load(){
 	// load raft state
 	var r=bytes.NewBuffer(rf.persister.ReadRaftState())
 	var d=labgob.NewDecoder(r)
-	d.Decode(&rf.term)
-	d.Decode(&rf.voteFor)
-	d.Decode(&rf.log.offset)
-	d.Decode(&rf.log.slice)
-	// d.Decode(&rf.lastApply)
+	d.Decode(&rf.currentTerm)
+	d.Decode(&rf.votedFor)
+	d.Decode(&rf.log)
 	d.Decode(&rf.lastCommit)
-	dout("%s load [%d:%d)", rf.String(), rf.lastCommit, rf.log.size())
+	d.Decode(&rf.lastSnapshot)
 }
-// should be called with lock
-func (rf *Raft) convertTo(s tState){
-	if s==_Candidate || rf.state!=s{
-		dout("%s --> %s", rf.String(), s)	
-	}	
-	switch s{
-	case _Follower:
-		rf.electTimer.Reset(randDuration(_ElectLower, _ElectUpper))
-		rf.heartbeatTimer.Reset(_Infinite)
-	case _Candidate:
-		rf.term++
-		rf.voteFor=rf.me
-		rf.useSave=true
-		rf.startElection()
-		rf.electTimer.Reset(randDuration(_ElectLower, _ElectUpper))
-		rf.heartbeatTimer.Reset(_Infinite)
-	default:
-		if rf.state!=_Leader{
-			for i:=range rf.nextIndex{
-				rf.nextIndex[i]=rf.log.size() 
-				// rf.matchIndex[i]=rf.lastCommit
-			}			
-		}
-		rf.broadcast()
-		rf.electTimer.Reset(_Infinite)
-		rf.heartbeatTimer.Reset(_HeartBeatInterval)
+
+// some getter
+func (rf *Raft) String() string{
+	return fmt.Sprintf("%s(%d,%d,%d,%d,%d)", 
+					rf.state.String(), rf.me, rf.currentTerm, rf.lastSnapshot, rf.lastApply, rf.lastCommit)
+}
+func (rf *Raft) logAt(absoluteIndex int) entryT{
+	if absoluteIndex<rf.lastSnapshot{
+		fmt.Printf("%s try get log[%d], but lastCommit=%d, lastSnapshot=%d, len(log)=%d", 
+					rf.String(), absoluteIndex, rf.lastCommit, rf.lastSnapshot, len(rf.log))
 	}
-	rf.state=s
+	return rf.log[absoluteIndex-rf.lastSnapshot]
 }
-// should be called with lock
-func (rf *Raft) apply(commit int){
-	// rf.matchIndex[rf.me]=rf.lastCommit
-	rf.lastCommit=min(rf.log.size()-1, max(rf.lastCommit, commit))
+func (rf *Raft) logLast() entryT{
+	return rf.log[len(rf.log)-1]
+}
+func (rf *Raft) logSize() int{
+	return rf.lastSnapshot+len(rf.log)
+}
+func (rf *Raft) logCopy(begin, end int) []entryT{
+	var res=make([]entryT, end-begin)
+	copy(res, rf.log[begin-rf.lastSnapshot: end-rf.lastSnapshot])
+	return res
+}
+
+// some setter
+func (rf *Raft) appendLog(entries ...entryT){
+	rf.log=append(rf.log, entries...)
+	rf.useSave=len(entries)>0
+}
+func (rf *Raft) truncateLog(last int){
+	if last<rf.logSize()-1{
+		rf.log=rf.log[0: last+1-rf.lastSnapshot]
+		rf.useSave=true
+	}
+}
+func (rf *Raft) setTermAndConvert(term int, state stateT){
+	var prev=rf.String()
+	switch state{
+	case followerC:
+		rf.votedFor=-1
+		rf.useSave=true
+		rf.electTimer.Reset(randDuration(electLowerC, electUpperC)) // prepare for next election
+	case candidateC:
+		rf.votedFor=rf.me
+		rf.useSave=true
+		rf.electTimer.Reset(randDuration(electLowerC, electUpperC))	// prepare for next election
+	default:
+		for i:=range rf.peers{ 
+			rf.matchIndex[i]=rf.lastSnapshot
+			rf.nextIndex[i]=rf.logSize() 
+		}
+		rf.heartbeatTimer.Reset(0)	// start heartbeat broadcast immediately
+		// it is the only case that raft convert to leader when election timer time out
+	}
+	rf.currentTerm=term
+	rf.state=state	
+	dump("%s -> %s", prev, rf.String())
+}
+func (rf *Raft) setVote(vote int){
+	rf.useSave=vote!=rf.votedFor
+	rf.votedFor=vote
+}
+func (rf *Raft) setCommitAndApply(commit int){
+	rf.lastCommit=min(rf.logSize()-1, max(rf.lastCommit, commit))
 	if rf.lastApply==rf.lastCommit{ return }
 	rf.useSave=true
+	rf.lastApply=max(rf.lastApply, rf.lastSnapshot)
 	var first=rf.lastApply+1
 	for rf.lastApply<rf.lastCommit{
 		rf.lastApply++
 		rf.applyCh<-ApplyMsg {
 			CommandValid:	true,
-			Command:		rf.log.get(rf.lastApply).Command,
+			Command:		rf.logAt(rf.lastApply).Command,
 			CommandIndex:	rf.lastApply,
 		}	
 	}
-	dout("%s apply [%d:%d)", rf.String(), first, rf.lastCommit+1)	
+	dump("%s apply [%d:%d)", rf.String(), first, rf.lastCommit+1)	
 }
-// should be called with lock
-func (rf *Raft) compress(persist int){
-	// compress log
-	// for i:=range rf.matchIndex{ rf.matchIndex[i]=max(rf.matchIndex[i], persist) }
-	// if persist==rf.log.offset{ return }
-	// rf.useSave=true
-	// rf.log.keep(persist, rf.log.size())
-	// rf.log.offset=persist	
-	// dout("%s compress [0, %d)", rf.String(), persist+1)
+func (rf *Raft) setSnapshotAndCompress(snapshot int){
+	var prevLastSnapshot=rf.lastSnapshot
+	rf.lastSnapshot=min(rf.logSize()-1, max(rf.lastSnapshot, snapshot))
+	if rf.lastSnapshot==prevLastSnapshot{ return }
+	rf.log=rf.log[rf.lastSnapshot-prevLastSnapshot: ]
+	dump("%s snapshot [%d:%d)", rf.String(), prevLastSnapshot+1, rf.lastSnapshot+1)
 }
 
-// if you want to save the raft state, just set rf.useSave=true with rf.sync()
-// when run rf.unsync(), it will check rf.useSave and finally run rf.save() (if rf.useSave==true)
-// should be called with lock
-func (rf *Raft) startElection(){
-	var raft=rf.String()
+
+
+// main entry of state machine below, no need to aquire lock previously
+
+func (rf *Raft) toCandidateAndstartElection(){
+	rf.sync()
+	defer rf.unsync()
+	if rf.state==leaderC{ return }
+	rf.setTermAndConvert(rf.currentTerm+1, candidateC)
 	var voteCnt int32=1
+	var prevRaftInfo=rf.String()
 	for i:=range rf.peers{
 		if i==rf.me{ continue }
 		var args=RequestVoteArgs{
-			Term:			rf.term,
+			Term:			rf.currentTerm,
 			CandidateID:	rf.me,
-			LastLogTerm:	rf.log.last().Term,
-			LastLogIndex:	rf.log.size()-1,
+			LastLogTerm:	rf.logLast().Term,
+			LastLogIndex:	rf.logSize()-1,
 		}
 		var reply RequestVoteReply
-		dout("%s request vote from (%d,,)", raft, i)	
-		go func(i int, args *RequestVoteArgs, reply *RequestVoteReply){			
+
+		go func(i int, args *RequestVoteArgs, reply *RequestVoteReply){
+			// dealing with out-of-date request
+			rf.sync()
+			var currentRaftInfo=rf.String()
+			rf.unsync()
+			if currentRaftInfo!=prevRaftInfo{ return }
+
+			// send request
+			dump("%s -%v-> node(%d)...", currentRaftInfo, *args, i)
 			if !rf.peers[i].Call("Raft.RequestVote", args, reply){
-				dout("%s request vote from (%d,,) fail", raft, i)
-				return
+				dump("%s -%v-> node(%d) fail", currentRaftInfo, *args, i)
+				return 
 			}
+
 			rf.sync()
 			defer rf.unsync()
-			// dealing with out-of-date reply in lossy network, so does in broadcast
-			if args.Term!=rf.term{ return }
-			if rf.state!=_Candidate{ return }
-			if reply.Term>rf.term{
-				rf.convertTo(_Follower)
-				rf.term=reply.Term
-				rf.useSave=true
-				return			
-			}
-			if reply.Success{
+			// should always dealing with term first
+			if rf.currentTerm<reply.Term{ rf.setTermAndConvert(reply.Term, followerC) }
+
+			// dealing with out-of-date reply, simply return
+			if rf.String()!=currentRaftInfo{ return }
+			if rf.state!=candidateC || rf.currentTerm>reply.Term || rf.currentTerm>args.Term{ return }
+
+			// dealing with RequestVote affair
+			if reply.VoteGaruantee{
 				atomic.AddInt32(&voteCnt, 1)
-				if atomic.LoadInt32(&voteCnt)>int32(len(rf.peers)/2){
-					rf.convertTo(_Leader)
-				}				
+				if atomic.LoadInt32(&voteCnt)>int32(len(rf.peers)/2){ 
+					rf.setTermAndConvert(rf.currentTerm, leaderC) 
+				}
 			}
 		}(i, &args, &reply)
 	}
 }
-// should be called with lock
-func (rf *Raft) broadcast(){
-	var raft=rf.String()
+
+func (rf *Raft) checkLeaderAndbroadcast(){
+	rf.sync()
+	defer rf.unsync()
+	if rf.state!=leaderC{ return }
+	rf.heartbeatTimer.Reset(heartbeatInterC)
+	var prevRaftInfo=rf.String()
 	for i:=range rf.peers{
-		rf.nextIndex[i]=max(rf.nextIndex[i], rf.log.offset+1)		
 		if i==rf.me{ continue }
 		var args=AppendEntriesArgs{
-			Term:			rf.term,				
+			Term:			rf.currentTerm,			
+			LeaderID:		rf.me,
 			PrevLogIndex:	rf.nextIndex[i]-1,		
-			PrevLogTerm:	rf.log.get(rf.nextIndex[i]-1).Term,			
-			Entries:		rf.log.copy(rf.nextIndex[i], rf.log.size()),
-			LeaderID:		rf.me,	
+			PrevLogTerm:	rf.logAt(rf.nextIndex[i]-1).Term,
+			Entries:		rf.logCopy(rf.nextIndex[i], rf.logSize()),
 			LeaderCommit:	rf.lastCommit,
-			LeaderPersist:	minimum(rf.matchIndex),
+			LeaderSnapshot: rf.lastSnapshot,
 		}
 		var reply AppendEntriesReply
-		dout("%s send [%d:%d) to (%d,,)", raft, rf.nextIndex[i], rf.log.size(), i)	
-		go func(i int, args *AppendEntriesArgs, reply *AppendEntriesReply){			
+
+		go func(i int, args *AppendEntriesArgs, reply *AppendEntriesReply){
+			// dealing with out-of-date request
+			rf.sync()
+			var currentRaftInfo=rf.String()
+			rf.unsync()
+			if currentRaftInfo!=prevRaftInfo{ return }
+
+			// send request
+			dump("%s -%v-> node(%d)...", currentRaftInfo, args.String(), i)
 			if !rf.peers[i].Call("Raft.AppendEntries", args, reply){
-				dout("%s send [%d:%d) to (%d,,) fail", raft, rf.nextIndex[i], rf.log.size(), i)
-				return
+				dump("%s -%v-> node(%d) fail", currentRaftInfo, args.String(), i)
+				return 
 			}
+
 			rf.sync()
 			defer rf.unsync()
-			//dealing with out-of-date reply in lossy network, so does in startElection
-			if args.Term!=rf.term{ return }			
-			if rf.state!=_Leader{ return }
-			if reply.Term>rf.term{
-				rf.convertTo(_Follower)
-				rf.term=reply.Term	
-				rf.useSave=true
-				return			
-			}
+			// should always dealing with term first
+			if rf.currentTerm<reply.Term{ rf.setTermAndConvert(reply.Term, followerC) }
+
+			// dealing with out-of-date reply, simply return
+			if rf.String()!=currentRaftInfo{ return }
+			if rf.state!=leaderC || rf.currentTerm>reply.Term || rf.currentTerm>args.Term{ return }
+
+			// dealing with AppendEntries affair 
 			if reply.Success{
 				rf.matchIndex[i]=args.PrevLogIndex+len(args.Entries)
 				rf.nextIndex[i]=rf.matchIndex[i]+1
-				rf.apply(mediate(rf.matchIndex)) // try update and useSave lastCommit in apply()
-				rf.compress(minimum(rf.matchIndex)) // try compress and useSave log
-			}else{
-				// if reply.ExpectNext==-1{
-				// 	dout("%s send [%d,%d) refused by %d", raft, args.PrevLogIndex+1, args.PrevLogIndex+1+len(args.Entries), i)
-				// 	os.Exit(1)
-				// }
-				rf.nextIndex[i]=reply.ExpectNext
+				rf.setCommitAndApply(mediate(rf.matchIndex))
+				rf.setSnapshotAndCompress(minimum(rf.matchIndex))
+			}else if reply.ExpectNext!=-1{
+				rf.nextIndex[i]=min(reply.ExpectNext, rf.logSize())				
 			}
 		}(i, &args, &reply)
 	}
 }
+
+
+// all below functions are RPC handler
 
 // RequestVote for certain candidate
 // rpc by candidate
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply){
 	rf.sync()
 	defer rf.unsync()
-	if args.Term<rf.term{
-		// refuse to vote
-		*reply=RequestVoteReply{ 
-			Term:		rf.term, 
-			Success:	false, 
-		}
-		dout("%s vote to (%d,,%d) refuse", rf.String(), args.CandidateID, args.Term)
-		return			
+	if rf.currentTerm>args.Term{
+		goto REFUSE
 	}
-	if args.Term>rf.term{
-		rf.convertTo(_Follower)
-		rf.term=args.Term
-		rf.voteFor=-1
-		rf.useSave=true
+	if rf.currentTerm<args.Term{ rf.setTermAndConvert(args.Term, followerC) }
+	if rf.state==followerC && (
+	args.LastLogTerm>rf.logLast().Term ||
+	args.LastLogTerm==rf.logLast().Term && args.LastLogIndex>=rf.logSize() ||
+	args.LastLogTerm==rf.logLast().Term && args.LastLogIndex==rf.logSize()-1 && (rf.votedFor==-1||rf.votedFor==args.CandidateID)){
+		rf.electTimer.Reset(randDuration(electLowerC, electUpperC))	// prepare for next election		
+		rf.setVote(args.CandidateID)
+		reply.Term, reply.VoteGaruantee=rf.currentTerm, true
+		dump("candidate(%d,%d) <-%v- %s (vote)", args.CandidateID, args.Term, *reply, rf.String())
+		return
 	}
-	if args.LastLogTerm>rf.log.last().Term ||
-	args.LastLogTerm==rf.log.last().Term && args.LastLogIndex>rf.log.size()-1 ||
-	args.LastLogTerm==rf.log.last().Term && args.LastLogIndex==rf.log.size()-1 && (rf.voteFor==-1 || rf.voteFor==args.CandidateID){
-		// vote garuantee
-		rf.convertTo(_Follower)
-		if rf.voteFor==-1{ rf.useSave=true }
-		rf.voteFor=args.CandidateID
-		*reply=RequestVoteReply{ 
-			Term:		rf.term, 
-			Success:	true,
-		}
-		dout("%s vote to (%d,,%d)", rf.String(), args.CandidateID, args.Term)	
-	}else{
-		// refuse to vote
-		*reply=RequestVoteReply{ 
-			Term:		rf.term, 
-			Success:	false, 
-		}
-		dout("%s vote to (%d,,%d) refuse", rf.String(), args.CandidateID, args.Term)			
-	}
+	REFUSE:
+		reply.Term, reply.VoteGaruantee=rf.currentTerm, false
+		dump("candidate(%d,%d) <-%v- %s (refuse)", args.CandidateID, args.Term, *reply, rf.String())
 }
 // AppendEntries to this raft
 // rpc by leader
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply){
 	rf.sync()
 	defer rf.unsync()
-	if args.Term<rf.term{
-		*reply=AppendEntriesReply{
-			Term:		rf.term,
-			Success:	false,
-			ExpectNext:	-1,
-		}
-		dout("%s [%d:%d) refuse [%d:...) from (%d,,%d)", 
-					rf.String(), rf.lastCommit, rf.log.size(), args.PrevLogIndex+1, args.LeaderID, args.Term)	
-		return 		
+	if rf.currentTerm>args.Term{
+		goto REFUSE
 	}
-	if args.Term>rf.term{
-		rf.convertTo(_Follower)
-		rf.term=args.Term
-		rf.useSave=true
+	if rf.currentTerm<args.Term || rf.state!=followerC{ rf.setTermAndConvert(args.Term, followerC) }
+	if rf.state!=followerC{
+		goto REFUSE
 	}
-	if args.PrevLogIndex<=rf.log.size()-1 && rf.log.get(args.PrevLogIndex).Term==args.PrevLogTerm{
-		rf.convertTo(_Follower)
-		var prev=max(args.PrevLogIndex, rf.lastCommit)
-		var entries=args.Entries.copy(prev-args.PrevLogIndex, len(args.Entries))
-		rf.log.keep(0, prev+1)
-		dout("%s [%d:%d) append [%d:%d) from %d, expect [%d:...)", 
-					rf.String(), rf.lastCommit, prev+1, prev+1, prev+1+len(entries), args.LeaderID, rf.log.size()+len(entries))
-		rf.log.append(entries...)	
-		rf.matchIndex[args.LeaderID]=args.LeaderCommit	// not necessary, but for effeciency
-		rf.nextIndex[args.LeaderID]=args.LeaderCommit+1 // not necessary, but for effeciency
-		rf.apply(args.LeaderCommit) // try update and useSave lastCommit in apply()
-		rf.compress(args.LeaderPersist) // not complete
-		*reply=AppendEntriesReply{
-			Term:		rf.term,
-			Success:	true,
-			ExpectNext:	rf.log.size(),
+	rf.electTimer.Reset(randDuration(electLowerC, electUpperC))	// prepare for next election
+
+	if args.PrevLogIndex<rf.logSize() && args.PrevLogTerm==rf.logAt(args.PrevLogIndex).Term{
+		if args.PrevLogIndex+len(args.Entries)<=rf.lastCommit{
+			dump("leader(%d,%d) <-%v- %s (all repeat)", args.LeaderID, args.Term, *reply, rf.String())			
+		}else if args.PrevLogIndex<rf.lastCommit{
+			rf.truncateLog(rf.lastCommit)
+			rf.appendLog(args.Entries[rf.lastCommit-args.PrevLogIndex: ]...)		
+			dump("leader(%d,%d) <-%v- %s (partial repeat)", args.LeaderID, args.Term, *reply, rf.String())	
+		}else{
+			rf.truncateLog(args.PrevLogIndex)
+			rf.appendLog(args.Entries...)
+			dump("leader(%d,%d) <-%v- %s (no repeat)", args.LeaderID, args.Term, *reply, rf.String())	
 		}
-	}else if args.PrevLogIndex<=rf.log.size()-1{
-		// un match, backup expect next index multi times in one rpc handler
-		rf.convertTo(_Follower)
-		var prev=max(args.PrevLogIndex, rf.lastCommit)
-		for prev>rf.lastCommit && rf.log.get(prev).Term==rf.log.get(args.PrevLogIndex).Term{ prev-- }
-		*reply=AppendEntriesReply{
-			Term:		rf.term,
-			Success:	false,
-			ExpectNext:	prev+1,
-		}
-		dout("%s [%d:%d) unmatch [%d:...) from (%d,,%d), expect [%d:...)", 
-					rf.String(), rf.lastCommit, rf.log.size(), args.PrevLogIndex, args.LeaderID, args.Term, reply.ExpectNext)
+		rf.setCommitAndApply(args.LeaderCommit)
+		rf.setSnapshotAndCompress(args.LeaderSnapshot)
+		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, rf.logSize()
+		return
+	}else if args.PrevLogIndex<rf.logSize(){
+		var prev=args.PrevLogIndex
+		var confictTerm=rf.logAt(prev).Term
+		for prev>rf.lastCommit && rf.logAt(prev).Term==confictTerm{ prev-- }
+		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, prev+1
+		dump("leader(%d,%d) <-%v- %s (conflict backup)", args.LeaderID, args.Term, *reply, rf.String())
+		return
 	}else{
-		// un match
-		rf.convertTo(_Follower)
-		*reply=AppendEntriesReply{
-			Term:		rf.term,
-			Success:	false,
-			ExpectNext:	rf.log.size(),
-		}
-		dout("%s [%d:%d) unmatch [%d:...) from (%d,,%d), expect [%d:...)", 
-					rf.String(), rf.lastCommit, rf.log.size(), args.PrevLogIndex, args.LeaderID, args.Term, reply.ExpectNext)				
+		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, rf.logSize()
+		dump("leader(%d,%d) <-%v- %s (no fetch backup)", args.LeaderID, args.Term, *reply, rf.String())	
+		return
 	}
+	REFUSE:
+		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, -1
+		dump("leader(%d,%d) <-%v- %s (refuse)", args.LeaderID, args.Term, *reply, rf.String())
 }
