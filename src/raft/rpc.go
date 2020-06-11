@@ -33,5 +33,5 @@ func (args *AppendEntriesArgs) String() string{
 type AppendEntriesReply struct{
 	Term		int
 	Success		bool // to check if the follower append the log
-	ExpectNext	int	// for log backup efficency, if it is -1, means follower dones't accept leaders entries
+	ExpectNext	int
 }

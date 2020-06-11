@@ -10,13 +10,14 @@ import (
 	"../labgob"
 )
 
-const useDebug=0 // 0 means no std output, see util.dump()
-const delay=1
+const useCompress=1 // 0 means not use log compress (for lab 3B)
+const useDebug=0 	// 0 means no std detail output (mainly for debug), see util.dump()
+const delay=1 		// adjust broadcast time and election time
 
 const (
 	heartbeatInterC		=time.Duration(120)*time.Millisecond*delay
-	electLowerC			=time.Duration(350)*time.Millisecond*delay
-	electUpperC			=time.Duration(500)*time.Millisecond*delay
+	electLowerC			=time.Duration(300)*time.Millisecond*delay
+	electUpperC			=time.Duration(450)*time.Millisecond*delay
 )
 
 // ApplyMsg is a pre-defined struct by framework, don't change it
@@ -73,7 +74,7 @@ type Raft struct {
 	applyCh		chan ApplyMsg	
 
 	//2C below
-	useSave		bool
+	useSave		bool // for efficiency, don't call save() directly, just set useSave = true
 
 	//3B below, in lab2 this will be simply set as zero and no change
 	// absolute log size = len(log)+lastSnapshot
@@ -210,10 +211,6 @@ func (rf *Raft) String() string{
 					rf.state.String(), rf.me, rf.currentTerm, rf.lastSnapshot, rf.lastApply, rf.lastCommit)
 }
 func (rf *Raft) logAt(absoluteIndex int) entryT{
-	if absoluteIndex<rf.lastSnapshot{
-		fmt.Printf("%s try get log[%d], but lastCommit=%d, lastSnapshot=%d, len(log)=%d", 
-					rf.String(), absoluteIndex, rf.lastCommit, rf.lastSnapshot, len(rf.log))
-	}
 	return rf.log[absoluteIndex-rf.lastSnapshot]
 }
 func (rf *Raft) logLast() entryT{
@@ -283,6 +280,7 @@ func (rf *Raft) setCommitAndApply(commit int){
 	dump("%s apply [%d:%d)", rf.String(), first, rf.lastCommit+1)	
 }
 func (rf *Raft) setSnapshotAndCompress(snapshot int){
+	if useCompress==0{ return }
 	var prevLastSnapshot=rf.lastSnapshot
 	rf.lastSnapshot=min(rf.logSize()-1, max(rf.lastSnapshot, snapshot))
 	if rf.lastSnapshot==prevLastSnapshot{ return }
@@ -299,8 +297,9 @@ func (rf *Raft) toCandidateAndstartElection(){
 	defer rf.unsync()
 	if rf.state==leaderC{ return }
 	rf.setTermAndConvert(rf.currentTerm+1, candidateC)
-	var voteCnt int32=1
-	var prevRaftInfo=rf.String()
+
+	var voteCnt=1
+
 	for i:=range rf.peers{
 		if i==rf.me{ continue }
 		var args=RequestVoteArgs{
@@ -314,9 +313,10 @@ func (rf *Raft) toCandidateAndstartElection(){
 		go func(i int, args *RequestVoteArgs, reply *RequestVoteReply){
 			// dealing with out-of-date request
 			rf.sync()
+			var currentTerm=rf.currentTerm
 			var currentRaftInfo=rf.String()
 			rf.unsync()
-			if currentRaftInfo!=prevRaftInfo{ return }
+			if currentTerm!=args.Term{ return }
 
 			// send request
 			dump("%s -%v-> node(%d)...", currentRaftInfo, *args, i)
@@ -327,17 +327,19 @@ func (rf *Raft) toCandidateAndstartElection(){
 
 			rf.sync()
 			defer rf.unsync()
-			// should always dealing with term first
-			if rf.currentTerm<reply.Term{ rf.setTermAndConvert(reply.Term, followerC) }
+
 
 			// dealing with out-of-date reply, simply return
-			if rf.String()!=currentRaftInfo{ return }
-			if rf.state!=candidateC || rf.currentTerm>reply.Term || rf.currentTerm>args.Term{ return }
-
+			if rf.currentTerm>reply.Term{ return }
+			// if rf.state!=candidateC || rf.currentTerm>reply.Term || rf.currentTerm>args.Term{ return }
+			
+			// should always dealing with term first
+			if rf.currentTerm<reply.Term{ rf.setTermAndConvert(reply.Term, followerC) }
+			if rf.state!=candidateC{ return }
 			// dealing with RequestVote affair
 			if reply.VoteGaruantee{
-				atomic.AddInt32(&voteCnt, 1)
-				if atomic.LoadInt32(&voteCnt)>int32(len(rf.peers)/2){ 
+				voteCnt++
+				if voteCnt>len(rf.peers)/2{ 
 					rf.setTermAndConvert(rf.currentTerm, leaderC) 
 				}
 			}
@@ -350,7 +352,6 @@ func (rf *Raft) checkLeaderAndbroadcast(){
 	defer rf.unsync()
 	if rf.state!=leaderC{ return }
 	rf.heartbeatTimer.Reset(heartbeatInterC)
-	var prevRaftInfo=rf.String()
 	for i:=range rf.peers{
 		if i==rf.me{ continue }
 		var args=AppendEntriesArgs{
@@ -367,9 +368,10 @@ func (rf *Raft) checkLeaderAndbroadcast(){
 		go func(i int, args *AppendEntriesArgs, reply *AppendEntriesReply){
 			// dealing with out-of-date request
 			rf.sync()
+			var currentTerm=rf.currentTerm
 			var currentRaftInfo=rf.String()
 			rf.unsync()
-			if currentRaftInfo!=prevRaftInfo{ return }
+			if currentTerm!=args.Term{ return }
 
 			// send request
 			dump("%s -%v-> node(%d)...", currentRaftInfo, args.String(), i)
@@ -380,21 +382,27 @@ func (rf *Raft) checkLeaderAndbroadcast(){
 
 			rf.sync()
 			defer rf.unsync()
-			// should always dealing with term first
-			if rf.currentTerm<reply.Term{ rf.setTermAndConvert(reply.Term, followerC) }
+
 
 			// dealing with out-of-date reply, simply return
-			if rf.String()!=currentRaftInfo{ return }
-			if rf.state!=leaderC || rf.currentTerm>reply.Term || rf.currentTerm>args.Term{ return }
+			if rf.currentTerm>reply.Term{ return }
+			// if rf.state!=leaderC || rf.currentTerm>reply.Term || rf.currentTerm>args.Term{ return }
 
+
+			// should always dealing with term first
+			if rf.currentTerm<reply.Term{ rf.setTermAndConvert(reply.Term, followerC) }
+			if rf.state!=leaderC{ return }
 			// dealing with AppendEntries affair 
 			if reply.Success{
+				// another out-of-date check
+				if rf.matchIndex[i]>args.PrevLogIndex+len(args.Entries){ return }
+
 				rf.matchIndex[i]=args.PrevLogIndex+len(args.Entries)
 				rf.nextIndex[i]=rf.matchIndex[i]+1
 				rf.setCommitAndApply(mediate(rf.matchIndex))
 				rf.setSnapshotAndCompress(minimum(rf.matchIndex))
 			}else if reply.ExpectNext!=-1{
-				rf.nextIndex[i]=min(reply.ExpectNext, rf.logSize())				
+				rf.nextIndex[i]=max(reply.ExpectNext, rf.matchIndex[i]+1)
 			}
 		}(i, &args, &reply)
 	}
@@ -441,11 +449,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	rf.electTimer.Reset(randDuration(electLowerC, electUpperC))	// prepare for next election
 
 	if args.PrevLogIndex<rf.logSize() && args.PrevLogTerm==rf.logAt(args.PrevLogIndex).Term{
-		if args.PrevLogIndex+len(args.Entries)<=rf.lastCommit{
+		// don't use lastCommit below, may cause some bug
+		if args.PrevLogIndex+len(args.Entries)<=rf.lastSnapshot{
 			dump("leader(%d,%d) <-%v- %s (all repeat)", args.LeaderID, args.Term, *reply, rf.String())			
-		}else if args.PrevLogIndex<rf.lastCommit{
-			rf.truncateLog(rf.lastCommit)
-			rf.appendLog(args.Entries[rf.lastCommit-args.PrevLogIndex: ]...)		
+		}else if args.PrevLogIndex<rf.lastSnapshot{
+			rf.truncateLog(rf.lastSnapshot)
+			rf.appendLog(args.Entries[rf.lastSnapshot-args.PrevLogIndex: ]...)		
 			dump("leader(%d,%d) <-%v- %s (partial repeat)", args.LeaderID, args.Term, *reply, rf.String())	
 		}else{
 			rf.truncateLog(args.PrevLogIndex)
@@ -454,12 +463,14 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		}
 		rf.setCommitAndApply(args.LeaderCommit)
 		rf.setSnapshotAndCompress(args.LeaderSnapshot)
-		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, rf.logSize()
+		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, -1
 		return
 	}else if args.PrevLogIndex<rf.logSize(){
-		var prev=args.PrevLogIndex
-		var confictTerm=rf.logAt(prev).Term
-		for prev>rf.lastCommit && rf.logAt(prev).Term==confictTerm{ prev-- }
+		// this is not the log backup optimization mention in raft paper, but it does work
+		// actually you can set any value to reply.ExpectNext since the leader will truncate it if necessary
+		var prev=args.PrevLogIndex-1
+		var term=rf.logAt(args.PrevLogIndex).Term
+		for prev>rf.lastCommit && rf.logAt(prev).Term==term{ prev-- }
 		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, prev+1
 		dump("leader(%d,%d) <-%v- %s (conflict backup)", args.LeaderID, args.Term, *reply, rf.String())
 		return
@@ -472,3 +483,4 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, -1
 		dump("leader(%d,%d) <-%v- %s (refuse)", args.LeaderID, args.Term, *reply, rf.String())
 }
+
