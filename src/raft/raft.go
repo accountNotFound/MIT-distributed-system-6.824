@@ -76,6 +76,7 @@ type Raft struct {
 	//2C below
 	useSave		bool // for efficiency, don't call save() directly, just set useSave = true
 
+
 	//3B below, in lab2 this will be simply set as zero and no change
 	// absolute log size = len(log)+lastSnapshot
 	lastSnapshot	int
@@ -120,6 +121,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool){
 		rf.matchIndex[rf.me]=rf.logSize()-1
 		rf.nextIndex[rf.me]=rf.logSize()
 		dump("--------user start one(%v) to %s---------", rf.logLast().Command, rf.String())
+		// rf.heartbeatTimer.Reset(0)
+		// don't broadcast immediately if the network environment is too bad, or there may be some bug
+		// instead, call Flush() to let raft broadcast if caller necessary
 	}
 	return index, term, isleader
 }
@@ -225,6 +229,7 @@ func (rf *Raft) logCopy(begin, end int) []entryT{
 	return res
 }
 
+
 // some setter
 func (rf *Raft) appendLog(entries ...entryT){
 	rf.log=append(rf.log, entries...)
@@ -267,7 +272,7 @@ func (rf *Raft) setCommitAndApply(commit int){
 	rf.lastCommit=min(rf.logSize()-1, max(rf.lastCommit, commit))
 	if rf.lastApply==rf.lastCommit{ return }
 	rf.useSave=true
-	rf.lastApply=max(rf.lastApply, rf.lastSnapshot)
+	rf.lastApply=max(rf.lastApply, rf.lastSnapshot)	// no necessary to apply log before snapshot
 	var first=rf.lastApply+1
 	for rf.lastApply<rf.lastCommit{
 		rf.lastApply++
@@ -430,9 +435,10 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply){
 		dump("candidate(%d,%d) <-%v- %s (vote)", args.CandidateID, args.Term, *reply, rf.String())
 		return
 	}
-	REFUSE:
-		reply.Term, reply.VoteGaruantee=rf.currentTerm, false
-		dump("candidate(%d,%d) <-%v- %s (refuse)", args.CandidateID, args.Term, *reply, rf.String())
+
+REFUSE:
+	reply.Term, reply.VoteGaruantee=rf.currentTerm, false
+	dump("candidate(%d,%d) <-%v- %s (refuse)", args.CandidateID, args.Term, *reply, rf.String())
 }
 // AppendEntries to this raft
 // rpc by leader
@@ -448,23 +454,19 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 	rf.electTimer.Reset(randDuration(electLowerC, electUpperC))	// prepare for next election
 
-	if args.PrevLogIndex<rf.logSize() && args.PrevLogTerm==rf.logAt(args.PrevLogIndex).Term{
-		// don't use lastCommit below, may cause some bug
-		if args.PrevLogIndex+len(args.Entries)<=rf.lastSnapshot{
-			dump("leader(%d,%d) <-%v- %s (all repeat)", args.LeaderID, args.Term, *reply, rf.String())			
-		}else if args.PrevLogIndex<rf.lastSnapshot{
-			rf.truncateLog(rf.lastSnapshot)
-			rf.appendLog(args.Entries[rf.lastSnapshot-args.PrevLogIndex: ]...)		
-			dump("leader(%d,%d) <-%v- %s (partial repeat)", args.LeaderID, args.Term, *reply, rf.String())	
-		}else{
-			rf.truncateLog(args.PrevLogIndex)
-			rf.appendLog(args.Entries...)
-			dump("leader(%d,%d) <-%v- %s (no repeat)", args.LeaderID, args.Term, *reply, rf.String())	
-		}
-		rf.setCommitAndApply(args.LeaderCommit)
-		rf.setSnapshotAndCompress(args.LeaderSnapshot)
-		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, -1
-		return
+	if args.PrevLogIndex+len(args.Entries)<=rf.lastCommit{
+		dump("leader(%d,%d) <-%v- %s (all repeat)", args.LeaderID, args.Term, *reply, rf.String())
+		goto SUCCESS
+	}else if args.PrevLogIndex<rf.lastCommit{
+		rf.truncateLog(rf.lastCommit)
+		rf.appendLog(args.Entries[rf.lastCommit-args.PrevLogIndex: ]...)		
+		dump("leader(%d,%d) <-%v- %s (partial repeat)", args.LeaderID, args.Term, *reply, rf.String())	
+		goto SUCCESS
+	}else if args.PrevLogIndex<rf.logSize() && args.PrevLogTerm==rf.logAt(args.PrevLogIndex).Term{
+		rf.truncateLog(args.PrevLogIndex)
+		rf.appendLog(args.Entries...)
+		dump("leader(%d,%d) <-%v- %s (no repeat)", args.LeaderID, args.Term, *reply, rf.String())	
+		goto SUCCESS
 	}else if args.PrevLogIndex<rf.logSize(){
 		// this is not the log backup optimization mention in raft paper, but it does work
 		// actually you can set any value to reply.ExpectNext since the leader will truncate it if necessary
@@ -479,8 +481,13 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		dump("leader(%d,%d) <-%v- %s (no fetch backup)", args.LeaderID, args.Term, *reply, rf.String())	
 		return
 	}
-	REFUSE:
-		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, -1
-		dump("leader(%d,%d) <-%v- %s (refuse)", args.LeaderID, args.Term, *reply, rf.String())
-}
 
+SUCCESS:
+	rf.setCommitAndApply(args.LeaderCommit)
+	rf.setSnapshotAndCompress(args.LeaderSnapshot)
+	reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, -1
+	return
+REFUSE:
+	reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, -1
+	dump("leader(%d,%d) <-%v- %s (refuse)", args.LeaderID, args.Term, *reply, rf.String())
+}
