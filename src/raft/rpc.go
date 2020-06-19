@@ -20,7 +20,7 @@ type AppendEntriesArgs struct{
 	LeaderID		int				
 	PrevLogIndex	int			
 	PrevLogTerm		int			
-	Entries			[]entryT
+	Entries			[]_Entry
 	LeaderCommit	int			
 	LeaderSnapshot	int		// for follower log compress, in lab2 this will be ignore
 }

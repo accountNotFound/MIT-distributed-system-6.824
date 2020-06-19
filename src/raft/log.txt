@@ -1,602 +1,600 @@
 1-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.2  5 3097 8092828   84
+  ... Passed --  46.0  5 9841 22845595  452
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.160s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.013s
 2-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.4  5 3132 8038927  125
+  ... Passed --  43.2  5 10116 20658842  162
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.466s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.250s
 3-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.1  5 3080 5804090  157
+  ... Passed --  44.1  5 9859 31024327   83
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.139s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.120s
 4-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.4  5 2928 4136418  384
+  ... Passed --  45.8  5 9965 27715659  198
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.464s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.779s
 5-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.9  5 3117 9866059  116
+  ... Passed --  49.0  5 10287 46047604  230
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.926s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.968s
 6-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.5  5 3054 7123810  545
+  ... Passed --  38.5  5 5696 29415447   23
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.530s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	38.515s
 7-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.6  5 3237 9538701   62
+  ... Passed --  51.4  5 6929 19585080   92
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.584s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.420s
 8-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.0  5 3242 12949554  576
+  ... Passed --  52.9  5 10622 38918576  501
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.054s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	52.924s
 9-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.7  5 2904 5821032  351
+  ... Passed --  41.5  5 10276 37545883   89
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.735s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.481s
 10-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.4  5 2505 4435145  379
+  ... Passed --  45.3  5 9126 27095058   23
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.377s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.323s
 11-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  47.6  5 2920 5943069  227
+  ... Passed --  44.5  5 7961 25206863  132
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.617s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.524s
 12-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.0  5 3196 6862807  244
+  ... Passed --  43.4  5 9388 51821316  234
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.976s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.381s
 13-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  52.0  5 3372 9624423  128
+  ... Passed --  43.1  5 8169 32914062  456
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	52.054s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.065s
 14-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.1  5 3052 7726209  142
+  ... Passed --  43.0  5 9686 26725165   48
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.136s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.052s
 15-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.4  5 3045 4556962   87
+  ... Passed --  46.5  5 7456 16750776   60
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.430s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.461s
 16-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.5  5 2749 4510873  150
+  ... Passed --  43.9  5 6917 17360633   30
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.513s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.884s
 17-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.4  5 2805 6421275  229
+  ... Passed --  47.9  5 7427 18537399   55
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.415s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.959s
 18-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  46.1  5 3252 7205626  284
+  ... Passed --  44.6  5 7229 29622175   82
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.077s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.596s
 19-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.2  5 3072 14938658  887
+  ... Passed --  46.2  5 9402 19039413   54
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.218s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.191s
 20-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.3  5 3236 16044984   48
+  ... Passed --  44.8  5 10128 38643763  138
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.274s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.793s
 21-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  41.7  5 2896 8181547  438
+  ... Passed --  46.5  5 10318 29738573   31
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.759s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.521s
 22-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.0  5 3360 10351069  432
+  ... Passed --  40.6  5 8833 29917657  171
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.976s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.579s
 23-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  49.8  5 3884 14357788  245
+  ... Passed --  42.2  5 9706 25744277  132
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	49.864s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.160s
 24-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.7  5 3217 8210747   90
+  ... Passed --  42.6  5 6522 24617820   40
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.676s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.643s
 25-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  46.9  5 3278 14127565  782
+  ... Passed --  40.4  5 8933 23030094  262
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.937s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.398s
 26-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  46.8  5 3680 9070873  362
+  ... Passed --  48.1  5 9960 33324233   90
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.820s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.076s
 27-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.1  5 3384 16718386  105
+  ... Passed --  44.5  5 9806 26607487   92
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.083s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.544s
 28-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.3  5 3140 9713981  514
+  ... Passed --  46.9  5 9196 22393463  206
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.320s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.951s
 29-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  37.4  5 2300 5797173  835
+  ... Passed --  41.5  5 8575 30733852   39
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	37.386s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.552s
 30-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.1  5 2739 5042012  101
+  ... Passed --  46.7  5 8857 19566589  412
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.073s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.672s
 31-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.4  5 3431 10835420  121
+  ... Passed --  45.6  5 9651 30228023  338
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.390s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.599s
 32-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  49.8  5 3800 9037473  692
+  ... Passed --  42.9  5 10171 30435484  719
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	49.833s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.913s
 33-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  41.9  5 3128 8089023  707
+  ... Passed --  47.7  5 10379 28105215  527
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.880s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.685s
 34-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.5  5 2692 7910671  197
+  ... Passed --  50.4  5 10604 37735787   49
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.497s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	50.409s
 35-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  39.2  5 2888 9877685  261
+  ... Passed --  42.6  5 8812 20059966  140
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	39.258s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.580s
 36-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
---- FAIL: TestFigure8Unreliable2C (46.01s)
-    config.go:475: one(7926) failed to reach agreement
-FAIL
-exit status 1
-FAIL	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.020s
+  ... Passed --  43.1  5 7935 23518869   42
+PASS
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.121s
 37-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.0  5 2704 6779704   74
+  ... Passed --  42.6  5 10097 22643818  161
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.001s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.633s
 38-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.6  5 2733 4284969  186
+  ... Passed --  46.3  5 10319 38359175   71
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.639s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.310s
 39-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  39.7  5 3058 7796978  388
+  ... Passed --  43.1  5 7070 19078264  724
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	39.758s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.151s
 40-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  38.6  5 2960 6445771  351
+  ... Passed --  51.0  5 9992 55755632   12
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	38.656s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.057s
 41-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  41.6  5 2792 8612200  273
+  ... Passed --  42.4  5 9875 23115207   57
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.616s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.395s
 42-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  47.6  5 3751 12552353   66
+  ... Passed --  43.2  5 8988 20314804  330
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.614s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.187s
 43-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.1  5 3338 11113391  111
+  ... Passed --  44.8  5 10057 55150008   17
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.072s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.776s
 44-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  50.5  5 4024 15750699  342
+  ... Passed --  39.7  5 8470 17445947  310
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	50.511s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	39.714s
 45-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.5  5 2448 2910966  106
+  ... Passed --  42.9  5 8546 13360161  113
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.466s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.927s
 46-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.6  5 3048 12741254  305
+  ... Passed --  45.8  5 10129 53145891  852
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.649s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.824s
 47-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  47.5  5 3084 5295121   58
+  ... Passed --  44.1  5 10059 50281986   52
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.553s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.141s
 48-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.1  5 3070 5398432  243
+  ... Passed --  45.9  5 7505 18932554  100
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.114s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.892s
 49-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.9  5 3128 14014670  184
+  ... Passed --  42.8  5 5787 10469749   24
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.876s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.860s
 50-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.3  5 3086 6295417  436
+  ... Passed --  51.7  5 9476 28429202   33
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.338s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.725s
 51-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.1  5 3000 6715004   52
+  ... Passed --  46.0  5 8036 32954090   61
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.078s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.975s
 52-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  49.1  5 3180 4141337  445
+  ... Passed --  44.9  5 6499 16483257   70
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	49.161s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.954s
 53-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.1  5 3400 11655947   43
+  ... Passed --  46.1  5 10321 43939366  172
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.124s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.140s
 54-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.5  5 3352 11286707  150
+  ... Passed --  43.2  5 8561 10907691  185
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.554s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.193s
 55-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  39.7  5 2940 11995461  766
+  ... Passed --  44.4  5 7410 19382073  678
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	39.694s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.461s
 56-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.7  5 3467 15865508   38
+  ... Passed --  47.5  5 10615 25459831  465
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.751s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.547s
 57-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.3  5 3280 5337958  176
+  ... Passed --  49.0  5 9813 29852428   38
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.353s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	49.013s
 58-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  46.3  5 2710 3733488  432
+  ... Passed --  39.7  5 8923 16961913  229
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.344s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	39.694s
 59-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.1  5 3368 12403052  624
+  ... Passed --  44.3  5 6767 8604764  378
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.117s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.301s
 60-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  41.6  5 3124 15253052   79
+  ... Passed --  48.7  5 8930 21449171  277
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.576s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.668s
 61-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.8  5 3256 10425915  894
+  ... Passed --  47.1  5 7744 11036725   47
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.835s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.132s
 62-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  52.4  5 3326 11671714   75
+  ... Passed --  46.1  5 6751 17882523   53
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	52.364s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.150s
 63-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  51.7  5 3644 15447307   21
+  ... Passed --  43.6  5 9190 13747852  214
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.699s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.568s
 64-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  51.6  5 4012 19730757   15
+  ... Passed --  46.1  5 10125 21761879   80
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.594s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.118s
 65-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.7  5 3492 13565390  197
+  ... Passed --  48.9  5 7627 12375658  362
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.691s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.942s
 66-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  47.5  5 3612 16452004  115
+  ... Passed --  46.3  5 9075 28504730   53
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.479s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.346s
 67-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  39.8  5 3132 11537028  607
+  ... Passed --  42.5  5 10031 37149674   44
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	39.846s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.522s
 68-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  41.5  5 2452 7031701   37
+  ... Passed --  45.1  5 10227 35521786  422
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.523s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.130s
 69-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.5  5 3022 12044335  168
+  ... Passed --  44.0  5 10028 39950584   58
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.513s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.978s
 70-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.1  5 3388 12329882  170
+  ... Passed --  41.9  5 9834 32907115   33
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.156s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.955s
 71-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.5  5 3096 7975145  409
+  ... Passed --  49.8  5 7735 10264411  263
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.479s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	49.791s
 72-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.6  5 3400 8075071   69
+  ... Passed --  48.2  5 9619 25327606  275
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.601s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.216s
 73-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.7  5 2616 4724632  111
+  ... Passed --  46.9  5 10039 32167087  153
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.691s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.937s
 74-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  36.5  5 2804 8454289  772
+  ... Passed --  41.7  5 9505 51981124  865
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	36.526s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.752s
 75-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  46.4  5 3568 9747170   56
+  ... Passed --  46.3  5 10107 62715679   28
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.457s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.342s
 76-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.7  5 3216 7128137  461
+  ... Passed --  43.5  5 6738 14136121  214
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.697s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.505s
 77-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  38.1  5 2868 9481647   78
+  ... Passed --  43.5  5 8800 18671801  147
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	38.111s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.525s
 78-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  46.1  5 3596 13483313  760
+  ... Passed --  45.7  5 9715 54871935   59
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	46.145s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.730s
 79-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.8  5 3284 11928056  107
+  ... Passed --  52.0  5 10824 36321230   85
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.865s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.978s
 80-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.5  5 3136 10036577  849
+  ... Passed --  51.9  5 7043 25346026  854
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.513s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	51.872s
 81-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  38.5  5 3028 11914434  221
+  ... Passed --  45.0  5 7485 20582175  212
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	38.542s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.035s
 82-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.5  5 2794 3825315  345
+  ... Passed --  45.7  5 8312 17466937   88
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.479s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.739s
 83-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  41.5  5 2820 6123817  119
+  ... Passed --  44.3  5 9440 34003729   73
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.529s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.266s
 84-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  44.7  5 3556 9754468  224
+  ... Passed --  47.5  5 9964 32461361  733
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.759s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.493s
 85-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  38.4  5 3012 16101004   80
+  ... Passed --  47.9  5 8194 24354052  540
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	38.442s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.962s
 86-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  38.5  5 2948 16322231  927
+  ... Passed --  44.6  5 10229 37367389   61
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	38.539s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.590s
 87-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  40.7  5 2571 5430611  165
+  ... Passed --  50.0  5 9712 27311328  767
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	40.685s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	50.055s
 88-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  36.2  5 2790 10066406  696
+  ... Passed --  47.0  5 10369 29845560  378
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	36.206s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.025s
 89-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.0  5 3084 8496578  507
+  ... Passed --  41.1  5 6440 20703010   43
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.041s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.154s
 90-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  43.1  5 2840 5991282  156
+  ... Passed --  43.7  5 9944 59364828   19
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.164s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.710s
 91-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.3  5 3336 11022846   26
+  ... Passed --  44.9  5 10055 47456677  132
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.290s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.887s
 92-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  47.5  5 3648 11315782  660
+  ... Passed --  43.2  5 9854 62270417  960
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.555s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.161s
 93-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.1  5 3336 7638677  105
+  ... Passed --  48.3  5 10488 25531535   94
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.126s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.285s
 94-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.3  5 3141 6923257    7
+  ... Passed --  45.9  5 10220 34879121   69
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.300s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.946s
 95-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  42.6  5 3084 5937318  281
+  ... Passed --  50.2  5 9412 15534876   82
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	42.643s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	50.224s
 96-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  48.4  5 3688 13107028  835
+  ... Passed --  44.2  5 7921 25708040  417
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	48.450s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	44.232s
 97-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  45.3  5 3504 13626794  253
+  ... Passed --  43.6  5 8012 13773387   49
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	45.358s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	43.604s
 98-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  53.2  5 3936 15591331  768
+  ... Passed --  49.8  5 9881 36186952   94
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	53.197s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	49.829s
 99-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  33.1  5 2460 7278811   84
+  ... Passed --  47.7  5 9880 43165731  172
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	33.113s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	47.675s
 100-th test on unreliable figure8(2C)
 labgob warning: Decoding into a non-default variable/field int may not work
 Test (2C): Figure 8 (unreliable) ...
-  ... Passed --  34.2  5 2724 9627977  245
+  ... Passed --  41.8  5 8046 15646673  160
 PASS
-ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	34.177s
+ok  	_/mnt/f/MIT-distributed-system-6.824/src/raft	41.769s
