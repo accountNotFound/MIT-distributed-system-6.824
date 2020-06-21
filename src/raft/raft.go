@@ -76,16 +76,21 @@ type Raft struct {
 	//2C below
 	useSave		bool // for efficiency, don't call save() directly, just set useSave = true
 
+	// 3A below
+	currentLeader	int
 
-	//3B below, in lab2 this will be simply set as zero and no change
+	// 3B below, in lab2 this will be simply set as zero and no change
 	// absolute log size = len(log)+lastSnapshot
 	lastSnapshot	int
 }
 
 // GetLeader of current term
-// not implemented
+// for lab3A leader redirection
 func (rf *Raft) GetLeader() int{
-	return -1
+	rf.sync()
+	defer rf.unsync()
+	var leader=rf.currentLeader
+	return leader
 }
 
 // implementation of some pre-define API below
@@ -149,6 +154,7 @@ func Make(peers []*labrpc.ClientEnd, me int, persister *Persister, applyCh chan 
 		applyCh:		applyCh,
 		useSave:		false,
 		lastSnapshot:	0,
+		currentLeader:	-1,
 	}
 	// Your initialization code here (2A, 2B, 2C).
 	// initialize from state persisted before a crash
@@ -237,11 +243,6 @@ func (rf *Raft) logCopy(begin, end int) []_Entry{
 	copy(res, rf.log[begin-rf.lastSnapshot: end-rf.lastSnapshot])
 	return res
 }
-func (rf *Raft) logTermMatch(index, term int) bool{
-	if index<=rf.lastCommit{ return true }
-	return rf.logAt(index).Term==term
-}
-
 
 // some setter
 func (rf *Raft) appendLog(entries ..._Entry){
@@ -269,6 +270,7 @@ func (rf *Raft) setTermAndConvert(term int, state _State){
 		rf.useSave=true
 		rf.electTimer.Reset(randDuration(_ELECTION_LOWER, _ELECTION_UPPER))	// prepare for next election
 	default:
+		rf.currentLeader=rf.me
 		for i:=range rf.peers{ 
 			rf.matchIndex[i]=rf.lastSnapshot
 			rf.nextIndex[i]=rf.logSize() 
@@ -467,11 +469,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		goto REFUSE
 	}
 	rf.electTimer.Reset(randDuration(_ELECTION_LOWER, _ELECTION_UPPER))	// prepare for next election
+	rf.currentLeader=args.LeaderID
 
 	if args.PrevLogIndex>=rf.logSize(){
 		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, rf.logSize()
 		return
-	}else if rf.logTermMatch(args.PrevLogIndex, args.PrevLogTerm){
+	}else if args.PrevLogIndex<=rf.lastCommit || rf.logAt(args.PrevLogIndex).Term==args.PrevLogTerm{
 		// don't simply truncate log at args.PrevLogIndex, 
 		// otherwise it may fail when args arrive without order
 		var raftIndex=max(rf.lastCommit, args.PrevLogIndex)+1
@@ -479,7 +482,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 		for argsIndex<len(args.Entries) && 
 		raftIndex<rf.logSize() && 
-		rf.logTermMatch(raftIndex, args.Entries[argsIndex].Term){ 
+		rf.logAt(raftIndex).Term==args.Entries[argsIndex].Term{ 
 			raftIndex++
 			argsIndex++
 		}
@@ -504,48 +507,4 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 REFUSE:
 	reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, -1
-
-
-// 	if args.PrevLogIndex+len(args.Entries)<=rf.lastCommit{
-// 		// reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, rf.logSize()
-// 		// dump("leader(%d,%d) <-%v- %s (all repeat)", args.LeaderID, args.Term, *reply, rf.String())
-// 		goto SUCCESS
-// 	}else if args.PrevLogIndex<rf.lastCommit{
-// 		rf.truncateLog(rf.lastCommit)
-// 		rf.appendLog(args.Entries[rf.lastCommit-args.PrevLogIndex: ]...)	
-// 		// reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, rf.logSize()	
-// 		// dump("leader(%d,%d) <-%v- %s (partial repeat)", args.LeaderID, args.Term, *reply, rf.String())	
-// 		goto SUCCESS
-// 	}else if args.PrevLogIndex<rf.logSize() && args.PrevLogTerm==rf.logAt(args.PrevLogIndex).Term{
-// 		rf.truncateLog(args.PrevLogIndex)
-// 		rf.appendLog(args.Entries...)
-// 		// reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, rf.logSize()
-// 		// dump("leader(%d,%d) <-%v- %s (no repeat)", args.LeaderID, args.Term, *reply, rf.String())	
-// 		goto SUCCESS
-// 	}else if args.PrevLogIndex<rf.logSize(){
-// 		// this is not the log backup optimization mention in raft paper, but it does work
-// 		// actually you can set any value to reply.ExpectNext since the leader will truncate it if necessary
-// 		var prev=args.PrevLogIndex-1
-// 		var term=rf.logAt(args.PrevLogIndex).Term
-// 		for prev>rf.lastCommit && rf.logAt(prev).Term==term{ prev-- }
-// 		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, prev+1
-// 		// dump("leader(%d,%d) <-%v- %s (conflict backup)", args.LeaderID, args.Term, *reply, rf.String())
-// 		dump("%s, %v", rf.String(), rf.log)
-// 		return
-// 	}else{
-// 		reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, rf.logSize()
-// 		// dump("leader(%d,%d) <-%v- %s (no fetch backup)", args.LeaderID, args.Term, *reply, rf.String())	
-// 		dump("%s, %v", rf.String(), rf.log)
-// 		return
-// 	}
-
-// SUCCESS:
-// 	rf.setCommitAndApply(args.LeaderCommit)
-// 	rf.setSnapshotAndCompress(args.LeaderSnapshot)
-// 	reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, true, args.PrevLogIndex+len(args.Entries)+1
-// 	dump("%s, %v", rf.String(), rf.log)
-// 	return
-// REFUSE:
-// 	reply.Term, reply.Success, reply.ExpectNext=rf.currentTerm, false, -1
-	// dump("leader(%d,%d) <-%v- %s (refuse)", args.LeaderID, args.Term, *reply, rf.String())
 }
