@@ -1,0 +1,80 @@
+在lab3中需要提供以下接口
+
+server.go:
+    type Op struct{
+        // your definition
+    }
+    对应于lab2中的Command，不可更改
+
+
+    type KVServer struct {
+        mu      sync.Mutex
+        me      int
+        rf      *raft.Raft
+        applyCh chan raft.ApplyMsg
+        dead    int32 // set by Kill()
+        maxraftstate int // snapshot if log grows this big
+        // Your definitions here.
+    }
+    预定义的KVServer结构体，不可更改
+
+
+    func (kv *KVServer) Get(args *GetArgs, reply *GetReply)
+    func (kv *KVServer) Put(args *PutAppendArgs, reply *PutAppendReply)
+    func (kv *KVServer) Append(args *PutAppendArgs, reply *PutAppendReply)
+    client通过这3个API进行远程调用
+
+
+    func (kv *KVServer) Kill() {
+        atomic.StoreInt32(&kv.dead, 1)
+        kv.rf.Kill()
+        // Your code here, if desired.
+    }
+    杀死当前server，不一定要改
+
+
+    func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister, maxraftstate int) *KVServer {
+        // call labgob.Register on structures you want
+        // Go's RPC library to marshall/unmarshall.
+        labgob.Register(Op{})
+        var kv=KVServer{
+            me:				me,
+            maxraftstate:	maxraftstate,
+        }
+        kv.applyCh=make(chan raft.ApplyMsg, 128)
+        kv.rf=raft.Make(servers, me, persister, kv.applyCh)
+        // You may need initialization code here.
+        return &kv
+    }
+    创建一个server并立即返回
+
+
+client.go:
+    type Clerk struct {
+        servers []*labrpc.ClientEnd
+        // You will have to modify this struct.
+    }
+    预定义的Clerk结构体
+
+
+    func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
+        ck := new(Clerk)
+        ck.servers = servers
+        // You'll have to add code here.
+        return ck
+    }
+    创建一个clerk并立即返回
+
+
+    func (ck *Clerk) Get(key string) string {
+        // returns "" if the key does not exist.
+        // You will have to modify this function.
+        return ""
+    }
+    func (ck *Clerk) Put(key string, value string) {
+        ck.PutAppend(key, value, "Put")
+    }
+    func (ck *Clerk) Append(key string, value string) {
+        ck.PutAppend(key, value, "Append")
+    }
+    通过这3个API做具体的读写操作

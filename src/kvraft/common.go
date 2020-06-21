@@ -1,33 +1,50 @@
 package kvraft
 
+import "fmt"
+
+type _OpType uint8
 const (
-	OK             = "OK"
-	ErrNoKey       = "ErrNoKey"
-	ErrWrongLeader = "ErrWrongLeader"
+	_GET	_OpType=iota
+	_PUT
+	_APPEND
 )
-
-type Err string
-
-// Put or Append
-type PutAppendArgs struct {
-	Key   string
-	Value string
-	Op    string // "Put" or "Append"
-	// You'll have to add definitions here.
-	// Field names must start with capital letters,
-	// otherwise RPC will break.
+func (t _OpType) String() string{
+	switch t{
+	case _GET: return "Get"
+	case _PUT: return "Put"
+	default:   return "Append"
+	}
 }
 
-type PutAppendReply struct {
-	Err Err
+// Meta is public for RPC
+type Meta struct{
+	ClientID	int64
+	RequestID	int
 }
 
-type GetArgs struct {
-	Key string
-	// You'll have to add definitions here.
+// Args for all operations
+type Args struct{
+	Meta
+	Type	_OpType
+	Key		string
+	Value	string	
+}
+func (a *Args) String() string{
+	var value=a.Value
+	// if len(value)>5{ value=value[0: 5] }
+	return fmt.Sprintf("{%v %v \"%s\" \"%s\"}", a.Meta, a.Type, a.Key, value)
 }
 
-type GetReply struct {
-	Err   Err
-	Value string
+
+// Reply for all operations
+type Reply struct{
+	Meta
+	Redirect	bool
+	LeaderID	int
+	Value		string
+}
+func (r *Reply) String() string{
+	var value=r.Value
+	// if len(value)>5{ value=value[0: 5] }
+	return fmt.Sprintf("{%v %v %v \"%s\"}", r.Meta, r.Redirect, r.LeaderID, value)
 }

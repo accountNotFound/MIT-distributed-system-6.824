@@ -3,28 +3,36 @@ package kvraft
 import (
 	"../labgob"
 	"../labrpc"
-	"log"
+	"fmt"
 	"../raft"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
-const Debug = 0
+const _AGREE_TIME_OUT=time.Millisecond*200
 
-func DPrintf(format string, a ...interface{}) (n int, err error) {
-	if Debug > 0 {
-		log.Printf(format, a...)
+
+const useDebug=0
+var timeStamp=0
+
+func dump(format string, a ...interface{}){
+	if useDebug>0{
+		timeStamp++
+		fmt.Printf("%d: ", timeStamp)
+		fmt.Printf(format+"\n", a...)
 	}
 	return
 }
 
-
-type Op struct {
-	// Your definitions here.
-	// Field names must start with capital letters,
-	// otherwise RPC will break.
+// Op is public 
+type Op struct{
+	Args 		*Args
+	ReplyMsg	*chan *Reply
+	LeaderID	int
 }
 
+// KVServer is public 
 type KVServer struct {
 	mu      sync.Mutex
 	me      int
@@ -35,30 +43,36 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
+	db		map[string] string
+	ch		map[int64] Reply
 }
 
+// ID of current KV server, rpc 
+func (kv *KVServer) ID(noArgs *bool, reply *int){
+	*reply=kv.me
+}
 
-func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
+// Get operation, rpc by Clerk
+func (kv *KVServer) Get(args *Args, reply *Reply){
 	// Your code here.
+	kv.handle(args, reply)
+}
+// Put operation, rpc by Clerk
+func (kv *KVServer) Put(args *Args, reply *Reply){
+	kv.handle(args, reply)
+}
+// Append operation, rpc by Clerk
+func (kv *KVServer) Append(args *Args, reply *Reply){
+	kv.handle(args, reply)
 }
 
-func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
-	// Your code here.
-}
-
-//
-// the tester calls Kill() when a KVServer instance won't
-// be needed again. for your convenience, we supply
-// code to set rf.dead (without needing a lock),
-// and a killed() method to test rf.dead in
-// long-running loops. you can also add your own
-// code to Kill(). you're not required to do anything
-// about this, but it may be convenient (for example)
-// to suppress debug output from a Kill()ed instance.
-//
+// Kill current KVServer
 func (kv *KVServer) Kill() {
+	kv.mu.Lock()
+	defer kv.mu.Unlock()
 	atomic.StoreInt32(&kv.dead, 1)
 	kv.rf.Kill()
+	dump("S(%d) be killed", kv.me)
 	// Your code here, if desired.
 }
 
@@ -67,20 +81,7 @@ func (kv *KVServer) killed() bool {
 	return z == 1
 }
 
-//
-// servers[] contains the ports of the set of
-// servers that will cooperate via Raft to
-// form the fault-tolerant key/value service.
-// me is the index of the current server in servers[].
-// the k/v server should store snapshots through the underlying Raft
-// implementation, which should call persister.SaveStateAndSnapshot() to
-// atomically save the Raft state along with the snapshot.
-// the k/v server should snapshot when Raft's saved state exceeds maxraftstate bytes,
-// in order to allow Raft to garbage-collect its log. if maxraftstate is -1,
-// you don't need to snapshot.
-// StartKVServer() must return quickly, so it should start goroutines
-// for any long-running work.
-//
+// StartKVServer service and return immediately
 func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister, maxraftstate int) *KVServer {
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
@@ -92,10 +93,84 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 
 	// You may need initialization code here.
 
-	kv.applyCh = make(chan raft.ApplyMsg)
+	kv.applyCh = make(chan raft.ApplyMsg, 256)
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
 
 	// You may need initialization code here.
+	kv.db=make(map[string] string)
+	kv.ch=make(map[int64] Reply)
+
+	go func(){
+		for !kv.killed(){
+			var op=(<-kv.applyCh).Command.(Op)
+			kv.mu.Lock()
+			var res=kv.checkAndExecute(op.Args)
+			if op.LeaderID==kv.me{ *op.ReplyMsg<-res }
+			kv.mu.Unlock()
+		}
+	}()
+	dump("S(%d) start", kv.me)
 
 	return kv
 }
+
+func (kv *KVServer) handle(args *Args, reply *Reply){
+	dump("S(%d) recieve %s", kv.me, args.String())	
+	kv.mu.Lock()
+	var res, msg=kv.checkAndStart(args)
+	kv.mu.Unlock()
+	if res!=nil{
+		*reply=*res
+	}else if msg!=nil{
+		select{
+		case <-time.After(_AGREE_TIME_OUT):
+			reply.Meta, reply.Redirect, reply.LeaderID=args.Meta, true, kv.rf.GetLeader()
+		case res:=<-*msg:
+			*reply=*res
+		}		
+	}else{
+		reply.Meta, reply.Redirect, reply.LeaderID=args.Meta, true, kv.rf.GetLeader()
+		// dump("S(%d) send %v", kv.me, *reply)
+	}
+}
+
+// call with lock
+func (kv *KVServer) check(args *Args) *Reply{
+	if cache, ok:=kv.ch[args.ClientID]; ok && args.RequestID<=cache.RequestID{ 
+		dump("S(%d) cache %s", kv.me, cache.String())
+		return &cache 
+	}
+	return nil
+}
+// call with lock
+func (kv *KVServer) checkAndExecute(args *Args) *Reply{
+	if cache:=kv.check(args);cache!=nil{ return cache }
+	var reply=Reply{
+		Meta:		args.Meta,
+		Redirect:	false,
+		LeaderID:	-1,
+	}
+	switch args.Type{
+	case _GET:		reply.Value=kv.db[args.Key]
+	case _PUT:		kv.db[args.Key]=args.Value
+	case _APPEND:	kv.db[args.Key]=kv.db[args.Key]+args.Value
+	}
+	kv.ch[args.ClientID]=reply
+	dump("S(%d) execute %s", kv.me, args.String())
+	return &reply
+}
+// call with lock
+func (kv *KVServer) checkAndStart(args *Args) (*Reply, *chan *Reply){
+	if cache:=kv.check(args);cache!=nil{ return cache, nil }
+	var msg=make(chan *Reply, 1)
+	var op=Op{
+		Args:		args,
+		ReplyMsg:	&msg,
+		LeaderID:	kv.me,
+	}
+	// dump("S(%d) try start %v", kv.me, *args)
+	if _, _, ok:=kv.rf.Start(op); ok{ return nil, &msg }
+	// dump("S(%d) is not leader", kv.me)
+	return nil, nil
+}
+
